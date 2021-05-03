@@ -34,6 +34,20 @@ Remeber what you read. Mindfull browsing.
 		- Send email with highest tallying content.
 
 
+## Deployment
+Deploymnent:
+https://www.bogotobogo.com/DevOps/Docker/Docker_Kubernetes_Minikube_3_Django_with_Redis_Celery.php
+
+
+
+## Resources
+https://github.com/RediSearch/redisearch-py
+
+
 https://redislabs.com/blog/building-real-time-full-text-site-search-with-redisearch/
 
+
+https://github.com/jazzband/django-redis
+
+https://github.com/redis-developer/basic-redis-chat-app-demo-python/tree/master/chat
 
