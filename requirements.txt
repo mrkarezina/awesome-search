@@ -1,0 +1,4 @@
+Django==3.2
+redisearch==2.0.0
+tweepy==3.10.0
+json-config-parser==0.1.2
