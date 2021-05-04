@@ -92,3 +92,11 @@ https://github.com/jazzband/django-redis
 
 https://github.com/redis-developer/basic-redis-chat-app-demo-python/tree/master/chat
 
+
+
+
+# TODO
+- [ ] Send daily email, script to generate report: https://stackoverflow.com/questions/573618/set-up-a-scheduled-job
+- [ ] Configuration script to configure Redis Indexes
+- [ ] Setup fresh environment from README to improve instruction replicability.
+	- Focus on Redis configuration. 
