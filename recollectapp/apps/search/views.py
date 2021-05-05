@@ -1,5 +1,5 @@
 import redisearch
-from config.settings import HOST, PORT
+from django_redis import get_redis_connection
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
@@ -9,7 +9,7 @@ INDEX_NAME = "recollectIndexTweets"
 @api_view(['GET'])
 def general_search(request):
 
-    client = redisearch.Client(INDEX_NAME, host=HOST, port=PORT)
+    client = redisearch.Client(INDEX_NAME, conn=get_redis_connection())
 
     if request.method == 'GET':
         query = request.GET.get('query')
