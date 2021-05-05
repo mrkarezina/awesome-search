@@ -11,9 +11,25 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
+from configparser import ConfigParser
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+CONFIG_DIR = BASE_DIR.parent
+
+config = ConfigParser()
+config.read(os.path.join(CONFIG_DIR, "config.ini"))
+
+HOST = config.get('redis', 'HOST')
+PORT = config.get('redis', 'PORT')
+REDIS_URL = f'redis://{HOST}:{PORT}/1'
+
+API_KEY = config.get('tweepy', 'API_KEY')
+API_SECRET_KEY = config.get('tweepy', 'API_SECRET_KEY')
+
+ACCESS_TOKEN = config.get('tweepy', 'ACCESS_TOKEN')
+ACCESS_TOKEN_SECRET = config.get('tweepy', 'ACCESS_TOKEN_SECRET')
 
 
 # Quick-start development settings - unsuitable for production
@@ -83,6 +99,16 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": REDIS_URL,
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
     }
 }
 
