@@ -37,20 +37,19 @@ class Indexer:
             print("Index already exists.")
 
     def index(self):
+        """
+        Insert scraped resources into Redis.
+        """
         for url in self.urls:
             parent = RepoScraper(url)
             print(f"Creating index for {parent.repo}")
 
             resources = AwesomeScrape(url).scrape(max_num=300)
 
-            # Schema
-            # 'resource:awesome_list:{parent_name}:{resource_name}'
-
-            # TODO: Use stargazer count to scale relevance?
             for resource in resources:
                 try:
                     language = resource['language'] if resource['language'] is not None else ''
-                    self.client.redis.hset(f"resource:awesome_list:{parent.repo}:{resource['name']}",
+                    self.client.redis.hset(f"resource:github:{parent.repo}:{resource['name']}",
                                            mapping={
                                                'repo_name': resource['name'],
                                                'body': resource['description'],

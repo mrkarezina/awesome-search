@@ -10,8 +10,10 @@ UNSAFE_CHARS = re.compile('[\\[\\]\\<\\>+]')
 
 
 def parse(query: str) -> str:
-    # Remove unsafe characters
-    # https://github.com/redislabs-training/redis-sitesearch/blob/master/sitesearch/query_parser.py
+    """
+    Remove unsafe characters
+    https://github.com/redislabs-training/redis-sitesearch/blob/master/sitesearch/query_parser.py
+    """
     query = query.strip().replace("-*", "*")
     query = UNSAFE_CHARS.sub(' ', query)
     query = query.strip()

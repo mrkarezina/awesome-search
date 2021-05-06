@@ -23,69 +23,87 @@ TODO: Screenshot showing speed of queries.
 
 
 ## How it works
-Highlights across different sources are stored in a variety of keys and data types using Redis.
+Resources across different sources are stored in a variety of keys and data types using Redis.
 
-Card data is stored as a JSON sterilized string.
+Resource data is stored as a JSON sterilized string.
 
 [django-redis](https://github.com/jazzband/django-redis) is used to configure Redis as the backend for Django's cache. This allows for neatly accessing the [redis-py](https://github.com/andymccurdy/redis-py) client using `get_redis_connection()`. 
 
 
 ### Schema
 
-All type of content / highlights are prefixed with `card`.
+All type of content are prefixed with `resources:`.
 
-TODO: Scheme for rest of data stored in Redis
+### Github Repos
+```
+SET resource:github:{parent_name}:{repo_name} 
+{
+	'repo_name': resource['name'],
+	'body': resource['description'],
+	'stargazers_count': resource['stargazers_count'],
+	'language': resource['language'],
+	'svn_url': resource['svn_url']
+}
+```
+
 
 ### Tweets
 
-#### Store
 ```
-SET cards:tweets:{tweet_id} {"tweet_id":"", "body":"", "author_screen_name":""}
-```
-
-#### Access
-```
-GET cards:tweets:{tweet_id}
+SET resource:tweets:{tweet_id}
+{
+	'tweet_id': resource['tweet_id'], 
+	'body': resource['body'], 
+	'author_screen_name': resource['author_screen_name']
+}
 ```
 
 
 ### Search
 
 #### Index
-All keys storing card data are prefixed with `card`. This allows for easily defining a Redisearch index with all the different card types we want to search. 
+All keys storing resource data are prefixed with `resource:`. This allows for easily defining a Redisearch index with all the different resource types we want to search.
 ```python
-definition = IndexDefinition(prefix=['card:'])
+definition = IndexDefinition(prefix=['resource:'])
 ```
-Optionally if only specific card types such as Tweets and Kindle Highlights were to be indexed more specifc prefixed could be specified: `prefix=['card:tweets', 'card:kindle']`.
+Optionally if only specific resources such as Github Repos were to be indexed more specific prefixes could be specified: `prefix=['resource:github']`.
 
 Before making any queries the index need to be built.
 ```python
-client.create_index([TextField("body", weight=0.5),
-                     TextField("title", weight=10)], definition=definition)
+self.client.create_index([TextField('body', weight=1),
+                                      TextField('repo_name', weight=1),
+                                      TextField('language', weight=1)], definition=definition)
 
 ```
-This specifies which hash feilds should be indexed.  Additionaly the weight argument allows for increasing the effect of matches in certain feilds such as "title".
+This specifies which feilds should be indexed.  Additionaly the weight argument allows for increasing the effect of matches in certain feilds such as "repo_name".
 
 Once the index is created it automatically stays in sync as new hashes are inserted. To add new documents to the index simply create a hash for that document.
 
 
-#### Queries
+#### General Search
 
-Users can search across all their cards. Additionally context for the search can be specified to use only specific corpera such as tweets from the "AI" twitter list from the last 10 days.
+```
+GET /search?query=
+```
 
-Queries are first parsed to remove unsafe characters.
+Full text search across all the resources.
 
-
-- Index list of tweets.
-- Can select "context", specifies the list from which to pull tweets.
-- Surface tweets relevant to content currently being browsed.
-- Instead of browsing twitter, get daily email with most relevant tweets based on what you browsed on a given day.
-
-Experiment with influencers on: https://medium.springboard.com/30-twitter-influencers-you-have-to-follow-for-ai-machine-learning-977587b6406e
+```
+FT.SEARCH {index} {query}
+```
 
 
-TODO: Scoring function, specific query construction
+#### Faceted Search
 
+```
+GET /search?query=&sources=
+```
+
+Full text search on specific sources.
+
+```
+FT.SEARCH {index} "@resource:{resource_id}" {query}
+```
 
 
 ## Similarity Search
@@ -182,6 +200,7 @@ https://github.com/redis-developer/basic-redis-chat-app-demo-python/tree/master/
 
 
 # TODO
+- [ ] Use stargazer count to scale relevance
 - [ ] Update schema to support cards from multiple users.
 - [ ] Redis queue to offload indexing tasks.
 - [ ] Custom scoring function for Redisearch td-idf similar. Calculate the vectors and take cosine similarty.
