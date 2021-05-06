@@ -21,15 +21,20 @@ CONFIG_DIR = BASE_DIR.parent
 config = ConfigParser()
 config.read(os.path.join(CONFIG_DIR, "config.ini"))
 
-HOST = config.get('redis', 'HOST')
-PORT = config.get('redis', 'PORT')
-REDIS_URL = f'redis://{HOST}:{PORT}/1'
+REDIS_HOST = config.get('redis', 'HOST')
+REDIS_PORT = config.get('redis', 'PORT')
+# REDIS_PASSWORD = config.get('redis', 'PASSWORD')
+REDIS_PASSWORD = None
+REDIS_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/0'
+INDEX_NAME = "golden_search"
 
 API_KEY = config.get('tweepy', 'API_KEY')
 API_SECRET_KEY = config.get('tweepy', 'API_SECRET_KEY')
 
 ACCESS_TOKEN = config.get('tweepy', 'ACCESS_TOKEN')
 ACCESS_TOKEN_SECRET = config.get('tweepy', 'ACCESS_TOKEN_SECRET')
+
+GH_ACCESS_TOKEN = config.get('github', 'ACCESS_TOKEN')
 
 
 # Quick-start development settings - unsuitable for production
@@ -108,6 +113,7 @@ CACHES = {
         "LOCATION": REDIS_URL,
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "PASSWORD": REDIS_PASSWORD
         }
     }
 }

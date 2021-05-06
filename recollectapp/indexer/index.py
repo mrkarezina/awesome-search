@@ -1,83 +1,70 @@
-import re
-from typing import Dict, List
 
-from time import sleep
-import requests
-from config.settings import GH_ACCESS_TOKEN
+from typing import List
 
-MAX_THREADS = 4
-DELAY = 0.5
-URL_PATTERN = "(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})"
+from config.settings import INDEX_NAME, REDIS_HOST, REDIS_PASSWORD, REDIS_PORT
+from redis.exceptions import DataError, ResponseError
+from redisearch import Client, IndexDefinition, TextField
+
+from .scrapers import AwesomeScrape, RepoScraper
 
 
-class RepoScraperError(Exception):
-    pass
-
-
-class RepoScraper:
+class Indexer:
     """
-    Uses Github API to return data for a repo.
+    Scrapes repos found on awesome lists. Inserts repo data into Redis.
+
+    **urls**: List of Github awsome lists URLs.
     """
 
-    def __init__(self, url: str):
-        url = url.replace("https://github.com/", '')
-        url = url.split('/')
-        self.owner = url[0]
-        self.repo = url[1].split(')', 1)[0]
+    def __init__(self, urls: List[str]):
+        self.urls = urls
+        self.client = Client(INDEX_NAME, REDIS_HOST,
+                             REDIS_PORT, REDIS_PASSWORD)
 
-    def get_repo_data(self) -> Dict:
-        return requests.get(f"https://api.github.com/repos/{self.owner}/{self.repo}", headers={
-            'Authorization': GH_ACCESS_TOKEN,
-        }).json()
-
-    def get_readme_text(self) -> str:
-        data = requests.get(
-            f"https://api.github.com/repos/{self.owner}/{self.repo}/readme", headers={
-                'Authorization': GH_ACCESS_TOKEN,
-            }).json()
-        download = data['download_url']
-        return requests.get(download).text
-
-
-class AwesomeScrape:
-    """
-    Scrapes repositories found on an awsome list.
-
-    Saves the repository data into a Redis instance.
-    """
-
-    def __init__(self, url: str):
-        self.url = url
-        self.repo_urls = self.__parse_urls()
-
-    def __parse_urls(self) -> List[str]:
+    def create_index_definition(self, drop_existing=False):
         """
-        Parses all Github repo URLs found on awsome list.
-        """
-        raw_readme = RepoScraper(self.url).get_readme_text()
-        urls = []
-        for match in re.finditer(re.compile(URL_PATTERN), raw_readme):
-            url = match.group()
-            if url.startswith("https://github.com/"):
-                urls.append(url)
-        return urls
-
-    def scrape(self, max_num: int = None) -> List[Dict]:
-        """
-        Scrapes data on all repositories found on awsome list.
+        Create an index definition. Do nothing if it already exists.
         """
 
-        repo_data = []
+        if drop_existing:
+            self.client.drop_index()
 
-        def get_repo_data(url) -> Dict:
-            return RepoScraper(url).get_repo_data()
+        definition = IndexDefinition(prefix=['resource:'])
+        try:
+            self.client.create_index([TextField('body', weight=1),
+                                      TextField('repo_name', weight=1),
+                                      TextField('language', weight=1)], definition=definition)
+        except ResponseError:
+            print("Index already exists.")
 
-        urls = self.repo_urls[:max_num] if max_num is not None else self.repo_urls
-        for url in urls:
-            try:
-                repo_data.append(get_repo_data(url))
-                sleep(DELAY)
-            except RepoScraperError:
-                pass
+    def index(self):
+        for url in self.urls:
+            parent = RepoScraper(url)
+            print(f"Creating index for {parent.repo}")
 
-        return repo_data
+            resources = AwesomeScrape(url).scrape(max_num=300)
+
+            # Schema
+            # 'resource:awesome_list:{parent_name}:{resource_name}'
+
+            # TODO: Use stargazer count to scale relevance?
+            for resource in resources:
+                try:
+                    language = resource['language'] if resource['language'] is not None else ''
+                    self.client.redis.hset(f"resource:awesome_list:{parent.repo}:{resource['name']}",
+                                           mapping={
+                                               'repo_name': resource['name'],
+                                               'body': resource['description'],
+                                               'stargazers_count': resource['stargazers_count'],
+                                               'language': language,
+                                               'svn_url': resource['svn_url']
+                                           })
+                except (KeyError, DataError):
+                    print(f"Resource missing data: f{resource}")
+
+
+if __name__ == "__main__":
+    indexer = Indexer([
+        "https://github.com/vinta/awesome-python"
+    ])
+    indexer.create_index_definition()
+    # indexer.index()

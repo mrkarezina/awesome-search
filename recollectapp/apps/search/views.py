@@ -1,11 +1,10 @@
 import re
 
+from config.settings import INDEX_NAME
 from django_redis import get_redis_connection
 from redisearch import Client, Query
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-
-INDEX_NAME = "recollectIndexTweets"
 
 UNSAFE_CHARS = re.compile('[\\[\\]\\<\\>+]')
 
