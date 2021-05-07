@@ -58,6 +58,18 @@ SET resource:tweets:{tweet_id}
 }
 ```
 
+### Resource lists
+
+When inserting a new resource, maintain a set of unique awesome lists and languages to implement faceted search.
+
+```
+SADD 'languages' {language}
+```
+
+```
+SADD 'awesome_lists' {list}
+```
+
 
 ### Search
 

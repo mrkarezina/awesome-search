@@ -44,11 +44,17 @@ class Indexer:
             parent = RepoScraper(url)
             print(f"Creating index for {parent.repo}")
 
+            self.client.redis.sadd('awesome_lists', parent.repo)
             resources = AwesomeScrape(url).scrape(max_num=300)
 
             for resource in resources:
                 try:
-                    language = resource['language'] if resource['language'] is not None else ''
+                    if resource['language'] is not None:
+                        language = resource['language']
+                        self.client.redis.sadd('languages', language)
+                    else:
+                        language = ''
+                    
                     self.client.redis.hset(f"resource:github:{parent.repo}:{resource['name']}",
                                            mapping={
                                                'awesome_list': parent.repo,

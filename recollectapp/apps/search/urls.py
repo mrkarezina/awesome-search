@@ -1,7 +1,9 @@
 from django.urls import path
 
-from .views import general_search
+from .views import general_search, languages, awesome_lists
 
 urlpatterns = [
-    path(r'', general_search, name="general-search")
+    path('', general_search, name="general-search"),
+    path('languages', languages, name="search-languages"),
+    path('awesome-lists', awesome_lists, name="search-lists")
 ]

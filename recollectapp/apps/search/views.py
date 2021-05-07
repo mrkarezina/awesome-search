@@ -6,6 +6,8 @@ from rest_framework.response import Response
 
 from .formatter import format_query
 
+from redis import Redis
+
 
 @api_view(['GET'])
 def general_search(request) -> Response:
@@ -30,4 +32,30 @@ def general_search(request) -> Response:
 
     return Response({
         "docs": [doc.__dict__ for doc in results]
+    })
+
+
+@api_view(['GET'])
+def languages(request) -> Response:
+    """
+    Returns list of languges.
+    """
+    client = get_redis_connection()
+    result = client.smembers('languages')
+
+    return Response({
+        "languages": result
+    })
+
+
+@api_view(['GET'])
+def awesome_lists(request) -> Response:
+    """
+    Returns list of awesome lists.
+    """
+    client = get_redis_connection()
+    result = client.smembers('awesome_lists')
+
+    return Response({
+        "lists": result
     })

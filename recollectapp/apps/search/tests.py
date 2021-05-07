@@ -27,6 +27,19 @@ class GeneralSearchTests(APITestCase):
 
     def test_faceted_search(self):
         url = reverse("general-search")
-        response = self.client.get(url, {'query': 'python', 'source': ['tweets', 'github'], 'language': ['Python', 'Ruby']})
+        response = self.client.get(url, {'query': 'python', 'source': [
+                                   'tweets', 'github'], 'language': ['Python', 'Ruby']})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIsNotNone(response.json()['docs'])
+
+    def test_language_list(self):
+        url = reverse("search-languages")
+        response = self.client.get(url)
+        self.assertIsNotNone(response.json()['languages'])
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_awesome_list_list(self):
+        url = reverse("search-lists")
+        response = self.client.get(url)
+        self.assertIsNotNone(response.json()['lists'])
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
