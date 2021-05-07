@@ -36,6 +36,10 @@ ACCESS_TOKEN_SECRET = config.get('tweepy', 'ACCESS_TOKEN_SECRET')
 
 GH_ACCESS_TOKEN = config.get('github', 'ACCESS_TOKEN')
 
+AWESOME_LISTS = []
+# Number of resources to include per list
+MAX_RES_PER_LIST = 300
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
@@ -61,9 +65,15 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'rest_framework_nested',
+    'users',
     'apps.search',
-    'apps.cards'
+    'apps.cards',
+    'knox'
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': ('knox.auth.TokenAuthentication',)
+}
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
