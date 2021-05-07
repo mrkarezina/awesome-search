@@ -51,6 +51,8 @@ class Indexer:
                     language = resource['language'] if resource['language'] is not None else ''
                     self.client.redis.hset(f"resource:github:{parent.repo}:{resource['name']}",
                                            mapping={
+                                               'awesome_list': parent.repo,
+                                               'source': 'github',
                                                'repo_name': resource['name'],
                                                'body': resource['description'],
                                                'stargazers_count': resource['stargazers_count'],

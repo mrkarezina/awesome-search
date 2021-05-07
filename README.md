@@ -96,14 +96,23 @@ FT.SEARCH {index} {query}
 #### Faceted Search
 
 ```
-GET /search?query=&sources=
+GET /search?query=&source=&language=&awesome-list=
 ```
 
-Full text search on specific sources.
+Redisearch supports feild modifiers in the query. Modifiers can be combined to implement filtering on multiple filed. We use field modifiers to implement faceted search on specific sources, languges, awesome lists.
 
 ```
-FT.SEARCH {index} "@resource:{resource_id}" {query}
+FT.SEARCH {index} @resouce:(tweets|github) @language:(Python|C) @awesome_list:(awesome-python) {query}
 ```
+
+
+Alternatively instead of specifying the source (ie: tweet or github) as a [feild modifier](https://oss.redislabs.com/redisearch/Query_Syntax/#field_modifiers) seperate indexes could be built for each source, by providing a more specific key prefix. Ie: 
+```
+definition_git = IndexDefinition(prefix=['resource:github'])
+definition_tweet = IndexDefinition(prefix=['resource:tweet'])
+```
+
+The seperate indexes would result in faster queries but introduce additional complexity if the user chooses to search across both sources.
 
 
 ## Similarity Search

@@ -1,33 +1,31 @@
-import re
-
 from config.settings import INDEX_NAME
 from django_redis import get_redis_connection
 from redisearch import Client, Query
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-UNSAFE_CHARS = re.compile('[\\[\\]\\<\\>+]')
-
-
-def parse(query: str) -> str:
-    """
-    Remove unsafe characters
-    https://github.com/redislabs-training/redis-sitesearch/blob/master/sitesearch/query_parser.py
-    """
-    query = query.strip().replace("-*", "*")
-    query = UNSAFE_CHARS.sub(' ', query)
-    query = query.strip()
-    return query
+from .formatter import format_query
 
 
 @api_view(['GET'])
 def general_search(request) -> Response:
+    """
+    Default full text search on all resources if no sources are specified.
+
+    Faceted search if sources are specified.
+
+    **query**: Query to search.
+    **source**: Multiple sources can be specifed.
+    """
 
     client = Client(INDEX_NAME, conn=get_redis_connection())
 
     query = request.GET.get('query')
-    query = parse(query)
-    results = client.search(query)
+    resources = request.GET.getlist('source')
+    languages = request.GET.getlist('language')
+    awesome_lists = request.GET.getlist('awesome-list')
+    query = format_query(query, resources, languages, awesome_lists)
+    results = client.search(Query(query))
     results = results.docs
 
     return Response({
