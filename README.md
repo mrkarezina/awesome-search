@@ -19,7 +19,7 @@ TODO: Screenshot showing speed of queries.
 
 ## Stack
 - Frontend - *React*
-- Backend - *Django*, *Redis*
+- Backend - *Django*, *Redis(RediSearch + RedisJSON)*
 
 
 ## How it works
@@ -181,10 +181,54 @@ Redis Queue
 
 ## Development
 
-Run RediSearch in a container as a daemon.
+### Python
+
+Create a new python virtual environment.
+```
+python -m venv venv
+```
+
+Activate virtual environment.
+```
+source venv/bin/activate
+```
+
+Install python dependecies
+```
+pip install -r requirements.txt
+```
+
+
+### Redis
+
+Start a Docker container running the Redis instance with the Redisearch module.
 ```
 docker run -d -p 6379:6379 redislabs/redisearch:2.0.0
 ```
+
+### Seed database
+Once Redis is up and running seed the database with some awesome list data.
+
+In `settings.py` configure which awesome lists you would like to scrape and the maximum number of repos to insert per list. To quickly get started with a small dataset reduce `MAX_RES_PER_LIST`. 
+
+```
+python -m indexer.index
+```
+
+### Django
+
+Run tests.
+```
+python manage.py test
+```
+
+Start the django server.
+```
+python manage.py runserver
+```
+
+
+
 
 ### Config
 
@@ -217,6 +261,7 @@ https://github.com/jazzband/django-redis
 
 https://github.com/redis-developer/basic-redis-chat-app-demo-python/tree/master/chat
 
+https://github.com/redis-developer/redis-hacker-news-demo
 
 
 
