@@ -9,11 +9,11 @@
 
 # Optional parameters:
 # @raycast.icon 📖
-# @raycast.argument1 { "type": "text", "placeholder": "query?", "optional": false }
-# @raycast.argument2 { "type": "text", "placeholder": "languages?", "optional": true }
+# @raycast.argument1 { "type": "text", "placeholder": "query", "optional": false }
+# @raycast.argument2 { "type": "text", "placeholder": "languages (e.g. python)", "optional": true }
 
 # Documentation:
-# @raycast.description Search github awesome lists and more!
+# @raycast.description Search awesome lists and more!
 # @raycast.author Marko Arezina
 # @raycast.authorURL markoarezina.com
 

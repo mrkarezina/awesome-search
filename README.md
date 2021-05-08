@@ -1,25 +1,43 @@
-# Recollect
+# Awesome Search
 
-Learn more from what you read.
+Find quality [awesome list](https://github.com/sindresorhus/awesome) resources and more directly in [Raycast](https://raycast.com/).
 
-Recollect allows you to rediscover your highlights from across the web.
-
+Powered by blazing fast [RediSearch](https://oss.redislabs.com/redisearch/).
 
 TODO: Architecture: https://redislabs.com/wp-content/uploads/2020/11/redisearch-docs-4.png
 
 TODO: Screenshot showing speed of queries.
 
+## Why
+Search results are frequently SEO'd to death. Results are full of low quality tutorials and blogs, making it hard to find the golden resources and niche blogs in all the noise.
+
+The goal of Awesome Search is to build a tool to find high quality resources amidst all the noise. Awesome Search is not meant to act like Google which is great for just about anything, rather focus on curated resources and niche blogs that might not rank as high on Google.
+
+Currently the prototype features searching across awesome lists and resources shared by your Twitter network.
+
 ## Features
-- Centralize highlights across Anki, [hypothes.is](https://web.hypothes.is/), [Readwise API](https://readwise.io/api_deets), Twitter, and Kindle.
-- Search highlights, powered by [Redisearch](https://redisearch.io/).
-- Resuface highlights similar to the article you're currently reading.
-- Daily email with random & relevant highlights to review.
-	- Relevant highlights determined by computing the most highlights documents while browsing.
-	- Highlights that surfaced most frequently are included in the daily review email.
+- Search projects across awesome lists.
+- Customize search preferences.
+- Add custom sources such as resources shared by your Twitter following or Twitter lists.
+
+
+## Next Steps
+- Integrate with Google Programmable Search Engine.
+	- [Pulling results from engineering blogs which don't rank as high on Google](https://twitter.com/mrkarezina/status/1345884177842003970?s=20).
+
 
 ## Stack
 - Frontend - *React*
 - Backend - *Django*, *Redis(RediSearch + RedisJSON)*
+
+
+## Installation
+
+To add the script follow the instructions on the [Raycast script commands page](https://github.com/raycast/script-commands).
+
+If you already have a script directory for your Raycast scripts simply copy the `raycast/awesome_search.py` script to it.
+
+TODO: Personalization token.
 
 
 ## How it works
@@ -27,12 +45,12 @@ Resources across different sources are stored in a variety of keys and data type
 
 Resource data is stored as a JSON sterilized string.
 
-[django-redis](https://github.com/jazzband/django-redis) is used to configure Redis as the backend for Django's cache. This allows for neatly accessing the [redis-py](https://github.com/andymccurdy/redis-py) client using `get_redis_connection()`. 
+[django-redis](https://github.com/jazzband/django-redis) is used to configure Redis as the backend for Django's cache. This allows for neatly managing the connection for the [redis-py](https://github.com/andymccurdy/redis-py) and [redisearch-py](https://github.com/RediSearch/redisearch-py) client instances using `get_redis_connection()`. 
 
 
 ### Schema
 
-All type of content are prefixed with `resources:`.
+All type of content are prefixed with `resource:`.
 
 ### Github Repos
 ```
@@ -60,7 +78,7 @@ SET resource:tweets:{tweet_id}
 
 ### Resource lists
 
-When inserting a new resource, maintain a set of unique awesome lists and languages to implement faceted search.
+When inserting a new resource, a list of unique awesome lists and languages is maintained to implement the UI for faceted search.
 
 ```
 SADD 'languages' {language}
@@ -111,72 +129,20 @@ FT.SEARCH {index} {query}
 GET /search?query=&source=&language=&awesome-list=
 ```
 
-Redisearch supports feild modifiers in the query. Modifiers can be combined to implement filtering on multiple filed. We use field modifiers to implement faceted search on specific sources, languges, awesome lists.
+Redisearch supports [feild modifiers](https://oss.redislabs.com/redisearch/Query_Syntax/#field_modifiers) in the query. Modifiers can be combined to implement filtering on multiple filed. We use field modifiers to implement faceted search on specific sources, languges, awesome lists.
 
 ```
 FT.SEARCH {index} @resouce:(tweets|github) @language:(Python|C) @awesome_list:(awesome-python) {query}
 ```
 
 
-Alternatively instead of specifying the source (ie: tweet or github) as a [feild modifier](https://oss.redislabs.com/redisearch/Query_Syntax/#field_modifiers) seperate indexes could be built for each source, by providing a more specific key prefix. Ie: 
+Alternatively instead of specifying the source (ie: tweet or github) as a feild modifier seperate indexes could be built for each source, by providing a more specific key prefix. Ie: 
 ```
 definition_git = IndexDefinition(prefix=['resource:github'])
 definition_tweet = IndexDefinition(prefix=['resource:tweet'])
 ```
 
-The seperate indexes would result in faster queries but introduce additional complexity if the user chooses to search across both sources.
-
-
-## Similarity Search
-
-TD-IDF comes out on top in several testing categories. https://towardsdatascience.com/the-best-document-similarity-algorithm-in-2020-a-beginners-guide-a01b9ef8cf05
-
-
-When computing cosine similarty between TD-IDF representations the length of the document does not matter.
-https://stackoverflow.com/questions/39704220/tf-idf-documents-of-different-length
-
-
-Write custom scoring function: https://oss.redislabs.com/redisearch/Scoring/
-https://oss.redislabs.com/redisearch/Extensions/#example_scoring_function
-
-- First need to insert query into hash, calculate td-idf for terms in query
-- Then in custom scoring code, for each term in query get tf-idf score
-- Consruct array of score
-- Similary for document construct array of score
-- Calculate cosine similarity and return as score
-
-- Not as fast as Annoy since not O(log n).
-
-
-
-### Email
-
-Redis Queue
-
-
-
-
-## Architecture
-- Django REST app.
-- Create account. (Optional, can have access tokens as config in django app)
-	- Submit access token to hypothesis, readwise, and twitter.
-- Backend
-	- Redis Queue for queing the indexing job
-		- New content is fetched
-		- Inserted into primary Redis
-	- Similarity query.
-		- Test between
-			- User highlights scentence.
-			- Paragraph.
-			- Title.
-		- RediSearch because of continous indexing capability, no need for batch indexing.
-		- Display most similar content.
-		- Increment tally of most similar content inside of Redis.
-	- Redis Queue for queing the daily email job.
-		- Reviews the content in Redis and find the highest ranking content.
-		- Send email with highest tallying content.
-
-
+The seperate indexes would result in faster queries but introduce additional complexity for ranking / pagination if the user chooses to search across both sources.
 
 
 ## Development
@@ -227,18 +193,30 @@ Start the django server.
 python manage.py runserver
 ```
 
+### Raycast
+
+Raycast automatically reflects any changes in the script. Simply run the script again to debug any changes.
+
 
 
 
 ### Config
 
-You will need to create a twitter developer account and submit an application to request access to the twitter API. Acceptance should be automated if you provide enough detail.
+Follow the steps below to copy the appropriate keys into `config.ini`.
 
-Copy the keys into `config.ini`.
+### Twitter
+
+You will need to create a twitter developer account and submit an application to request access to the twitter API. Acceptance should be automated if you provide enough detail.
 
 The API key and secret on the developer dashboard is the consumer key and secret.
 
 The access token and secret is account specific.
+
+
+### Github
+
+
+No application is required for the Github API. Request a personal access token [here](https://github.com/settings/tokens).
 
 
 ## Deployment
@@ -249,29 +227,9 @@ https://www.bogotobogo.com/DevOps/Docker/Docker_Kubernetes_Minikube_3_Django_wit
 TODO: see cloud run deployment
 
 
-## Resources
-Great article on building real time search for documentation: https://redislabs.com/blog/building-real-time-full-text-site-search-with-redisearch/
-
-https://github.com/redislabs-training/redis-sitesearch
-
-https://github.com/RediSearch/redisearch-py
-
-
-https://github.com/jazzband/django-redis
-
-https://github.com/redis-developer/basic-redis-chat-app-demo-python/tree/master/chat
-
-https://github.com/redis-developer/redis-hacker-news-demo
-
-
-
 # TODO
 - [ ] Use stargazer count to scale relevance
 - [ ] Update schema to support cards from multiple users.
-- [ ] Redis queue to offload indexing tasks.
-- [ ] Custom scoring function for Redisearch td-idf similar. Calculate the vectors and take cosine similarty.
-- [ ] Replace postge database
-- [ ] Send daily email, script to generate report: https://stackoverflow.com/questions/573618/set-up-a-scheduled-job
 - [ ] Configuration script to configure Redis Indexes
 - [ ] Setup fresh environment from README to improve instruction replicability.
 	- Focus on Redis configuration. 
