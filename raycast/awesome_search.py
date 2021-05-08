@@ -2,16 +2,15 @@
 
 # Required parameters:
 # @raycast.schemaVersion 1
-# @raycast.title Awesome Search
+# @raycast.title Awesome
 # @raycast.mode fullOutput
 # @raycast.refreshTime 5m
-# - @raycast.packageName Quick reference
+# @raycast.packageName Search
 
 # Optional parameters:
 # @raycast.icon 📖
 # @raycast.argument1 { "type": "text", "placeholder": "query?", "optional": false }
 # @raycast.argument2 { "type": "text", "placeholder": "languages?", "optional": true }
-# @raycast.argument3 { "type": "text", "placeholder": "lists?", "optional": true }
 
 # Documentation:
 # @raycast.description Search github awesome lists and more!
@@ -27,6 +26,13 @@ from urllib.request import urlopen
 
 API_URL = "http://127.0.0.1:8000"
 
+colors = {
+    'green': '\033[92m',
+    'red': '\033[91m',
+    'end': '\033[0m',
+    'yellow': '\033[93m',
+}
+
 
 def parse_list(arg: str) -> str:
     """
@@ -36,7 +42,7 @@ def parse_list(arg: str) -> str:
     return re.split(r'\W+', arg)
 
 
-def format_url(query: str, languages: List[str], lists: List[str]) -> str:
+def format_url(query: str, languages: List[str], lists: List[str] = []) -> str:
     query = quote(query)
 
     languages = [f'language={l}' for l in languages if l != '']
@@ -45,21 +51,13 @@ def format_url(query: str, languages: List[str], lists: List[str]) -> str:
     lists = [f'awesome-list={l}' for l in lists if l != '']
     lists = "&".join(lists)
 
-    print(f'{API_URL}/search?query={query}&{languages}&{lists}')
-    return f'{API_URL}/search?query={query}&{languages}&{lists}'
+    return f"{API_URL}/search?query={query}&{languages}&{lists}"
 
 
 query = sys.argv[1]
-languages = sys.argv[2]
-lists = sys.argv[3]
+languages = parse_list(sys.argv[2])
 
-# Split by any non-alphanumeric
-languages = re.split(r'\W+', languages)
-lists = re.split(r'\W+', lists)
-
-print(query, languages, lists)
-
-query_url = format_url(query, languages, lists)
+query_url = format_url(query, languages)
 
 try:
     with urlopen(query_url) as f:
@@ -70,5 +68,5 @@ except:
 
 for doc in result['docs']:
     name, desc, stars, url = doc['repo_name'], doc['body'], doc['stargazers_count'], doc['svn_url']
-    print(
-        f'Project: {name} Description: {desc} \n Stars: {stars} URL: {url} \n')
+    print(f"{colors['green']}{name}{colors['end']} - {desc}")
+    print(f"Stars {colors['yellow']}{stars}{colors['end']} {url}\n")
