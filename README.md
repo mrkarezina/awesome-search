@@ -50,11 +50,11 @@ Resource data is stored as a JSON sterilized string.
 
 ### Schema
 
-All type of content are prefixed with `resource:`.
+All type of resources are prefixed with `resource:`.
 
 ### Github Repos
 ```
-SET resource:github:{parent_name}:{repo_name} 
+SET resource:github:{owner}:{repo_name} 
 {
 	'repo_name': resource['name'],
 	'body': resource['description'],
@@ -64,28 +64,19 @@ SET resource:github:{parent_name}:{repo_name}
 }
 ```
 
-
-### Tweets
-
+Track which awesome lists a repository appears on. We can then use this set to add a [tag feild](https://oss.redislabs.com/redisearch/Tags/) specifying the awesome lists a resource appears on.
 ```
-SET resource:tweets:{tweet_id}
-{
-	'tweet_id': resource['tweet_id'], 
-	'body': resource['body'], 
-	'author_screen_name': resource['author_screen_name']
-}
+SADD resource:github:{owner}:{repo_name}:lists {list}
 ```
 
-### Resource lists
-
-When inserting a new resource, a list of unique awesome lists and languages is maintained to implement the UI for faceted search.
+When inserting a new resource, maintain a list of unique awesome lists and languages to implement faceted search.
 
 ```
-SADD 'languages' {language}
+SADD resource:data:languages {language}
 ```
 
 ```
-SADD 'awesome_lists' {list}
+SADD resource:data:awesome_lists {list}
 ```
 
 
@@ -226,8 +217,14 @@ https://www.bogotobogo.com/DevOps/Docker/Docker_Kubernetes_Minikube_3_Django_wit
 
 TODO: see cloud run deployment
 
+https://cloud.google.com/python/django/appengine
++ Redis enterprise cloud
+
+Add double config if it's app engine environment or just local
+
 
 # TODO
+- [ ] Add contributing instructions
 - [ ] Use stargazer count to scale relevance
 - [ ] Update schema to support cards from multiple users.
 - [ ] Configuration script to configure Redis Indexes

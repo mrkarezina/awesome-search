@@ -18,11 +18,9 @@ class AwesomeScrapeTests(TestCase):
 class AwesomeIndexerTests(TestCase):
     def test_awesome_indexer(self):
         indexer = Indexer([
-            # "https://github.com/vinta/awesome-python",
-            "https://github.com/JamzyWang/awesome-redis",
-            "https://github.com/markets/awesome-ruby",
-            "https://github.com/mjhea0/awesome-flask"
-        ])
+            "https://github.com/vinta/awesome-python",
+            "https://github.com/JamzyWang/awesome-redis"
+        ], max_per_list=2)
         indexer.create_index_definition()
         indexer.index()
 

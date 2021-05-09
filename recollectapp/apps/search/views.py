@@ -1,12 +1,14 @@
-from config.settings import INDEX_NAME
+from config.keys import Keys
+from config.settings import INDEX_NAME, KEY_PREFIX
 from django_redis import get_redis_connection
+from redis import Redis
 from redisearch import Client, Query
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from .formatter import format_query
 
-from redis import Redis
+keys = Keys(KEY_PREFIX)
 
 
 @api_view(['GET'])
@@ -30,6 +32,8 @@ def general_search(request) -> Response:
     results = client.search(Query(query))
     results = results.docs
 
+    print(results[0])
+
     return Response({
         "docs": [doc.__dict__ for doc in results]
     })
@@ -41,7 +45,7 @@ def languages(request) -> Response:
     Returns list of languges.
     """
     client = get_redis_connection()
-    result = client.smembers('languages')
+    result = client.smembers(keys.language_list())
 
     return Response({
         "languages": result
@@ -54,7 +58,7 @@ def awesome_lists(request) -> Response:
     Returns list of awesome lists.
     """
     client = get_redis_connection()
-    result = client.smembers('awesome_lists')
+    result = client.smembers(keys.awesome_list_list())
 
     return Response({
         "lists": result

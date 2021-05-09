@@ -27,6 +27,7 @@ REDIS_PORT = config.get('redis', 'PORT')
 REDIS_PASSWORD = None
 REDIS_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/0'
 INDEX_NAME = "golden_search"
+KEY_PREFIX = "awesome"
 
 API_KEY = config.get('tweepy', 'API_KEY')
 API_SECRET_KEY = config.get('tweepy', 'API_SECRET_KEY')
