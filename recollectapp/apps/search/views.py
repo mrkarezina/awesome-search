@@ -32,8 +32,6 @@ def general_search(request) -> Response:
     results = client.search(Query(query))
     results = results.docs
 
-    print(results[0])
-
     return Response({
         "docs": [doc.__dict__ for doc in results]
     })

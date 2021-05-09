@@ -16,15 +16,15 @@ import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-CONFIG_DIR = BASE_DIR.parent
+CONFIG_DIR = BASE_DIR
 
 config = ConfigParser()
 config.read(os.path.join(CONFIG_DIR, "config.ini"))
 
 REDIS_HOST = config.get('redis', 'HOST')
 REDIS_PORT = config.get('redis', 'PORT')
-# REDIS_PASSWORD = config.get('redis', 'PASSWORD')
-REDIS_PASSWORD = None
+REDIS_PASSWORD = config.get('redis', 'PASSWORD')
+# REDIS_PASSWORD = None
 REDIS_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/0'
 INDEX_NAME = "golden_search"
 KEY_PREFIX = "awesome"
@@ -45,13 +45,21 @@ MAX_RES_PER_LIST = 300
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-93_n5luo&94acd^2aaal(w^00l22%w)6dys(hkr!8f9ga#i97k'
+#
+if os.getenv('GAE_APPLICATION', None):
+    # SECURITY WARNING: don't run with debug turned on in production!
+    DEBUG = False
+    # SECURITY WARNING: keep the secret key used in production secret!
+    SECRET_KEY = config.get('prod', 'SECRET_KEY').strip()
+else:
+    DEBUG = True
+    SECRET_KEY = 'django-insecure-93_n5luo&94acd^2aaal(w^00l22%w)6dys(hkr!8f9ga#i97k'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
+# SECURITY WARNING: App Engine's security features ensure that it is safe to
+# have ALLOWED_HOSTS = ['*'] when the app is deployed. If you deploy a Django
+# app not on App Engine, make sure to set an appropriate host here.
+# See https://docs.djangoproject.com/en/2.1/ref/settings/
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -108,15 +116,42 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 
+
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
+if os.getenv('GAE_APPLICATION', None):
+    # Install PyMySQL as mysqlclient/MySQLdb to use Django's mysqlclient adapter
+    # See https://docs.djangoproject.com/en/2.1/ref/databases/#mysql-db-api-drivers
+    # for more information
+    import pymysql  # noqa: 402
+    pymysql.version_info = (1, 4, 6, 'final', 0)  # change mysqlclient version
+    pymysql.install_as_MySQLdb()
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    # Running on production App Engine, so connect to Google Cloud SQL using
+    # the unix socket at /cloudsql/<your-cloudsql-connection string>
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'HOST': f"/cloudsql/{config.get('prod', 'MYSQL_CONNECTION_NAME')}",
+            'USER': config.get('prod', 'MYSQL_USER'),
+            'PASSWORD': config.get('prod', 'MYSQL_PASS'),
+            'NAME': config.get('prod', 'MYSQL_NAME'),
+        }
     }
-}
+else:
+    # Running locally so connect to either a local MySQL instance or connect to
+    # Cloud SQL via the proxy. To start the proxy via command line:
+    #
+    #     $ cloud_sql_proxy -instances=[INSTANCE_CONNECTION_NAME]=tcp:3306
+    #
+    # See https://cloud.google.com/sql/docs/mysql-connect-proxy
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+
 
 CACHES = {
     "default": {

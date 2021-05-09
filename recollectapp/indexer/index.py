@@ -20,8 +20,8 @@ class Indexer:
 
     def __init__(self, urls: List[str], max_per_list: int = MAX_RES_PER_LIST):
         self.urls = urls
-        self.client = Client(INDEX_NAME, REDIS_HOST,
-                             REDIS_PORT, REDIS_PASSWORD)
+        self.client = Client(INDEX_NAME, host=REDIS_HOST,
+                             port=REDIS_PORT, password=REDIS_PASSWORD)
         self.keys = Keys(KEY_PREFIX)
         self.max = max_per_list
 
@@ -37,7 +37,8 @@ class Indexer:
         try:
             self.client.create_index([TextField('body', weight=1),
                                       TextField('repo_name', weight=1.5),
-                                      TextField('language', weight=1), TagField('lists')], definition=definition)
+                                      TextField('language', weight=1),
+                                      TagField('lists')], definition=definition)
         except ResponseError:
             print("Index already exists.")
 
@@ -89,7 +90,19 @@ class Indexer:
 
 if __name__ == "__main__":
     indexer = Indexer([
-        "https://github.com/vinta/awesome-python"
-    ], max_per_list=5)
+        "https://github.com/vinta/awesome-python",
+        "https://github.com/JamzyWang/awesome-redis",
+        "https://github.com/sorrycc/awesome-javascript",
+        "https://github.com/sindresorhus/awesome-nodejs",
+        "https://github.com/markets/awesome-ruby",
+        "https://github.com/veggiemonk/awesome-docker",
+        "https://github.com/mjhea0/awesome-flask",
+        "https://github.com/wsvincent/awesome-django",
+        "https://github.com/ramitsurana/awesome-kubernetes",
+        "https://github.com/enaqx/awesome-react",
+        "https://github.com/dzharii/awesome-typescript",
+        "https://github.com/EthicalML/awesome-production-machine-learning",
+        "https://github.com/gramantin/awesome-rails"
+    ], max_per_list=300)
     indexer.create_index_definition()
     indexer.index()

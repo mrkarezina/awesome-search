@@ -6,3 +6,5 @@ djangorestframework==3.12.4
 django-cors-headers==3.7.0
 drf-nested-routers==0.93.3
 django-redis==4.12.1
+django-rest-knox
+PyMySQL==1.0.2
