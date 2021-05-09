@@ -25,15 +25,19 @@ def general_search(request) -> Response:
     client = Client(INDEX_NAME, conn=get_redis_connection())
 
     query = request.GET.get('query')
+    sort_stars = request.GET.get('sort-stars')
     resources = request.GET.getlist('source')
     languages = request.GET.getlist('language')
     awesome_lists = request.GET.getlist('awesome-list')
+
     query = format_query(query, resources, languages, awesome_lists)
     results = client.search(Query(query))
-    results = results.docs
+    results = [doc.__dict__ for doc in results.docs]
+    if sort_stars == "true":
+        results.sort(key=lambda x: int(x['stargazers_count']), reverse=True)
 
     return Response({
-        "docs": [doc.__dict__ for doc in results]
+        "docs": results
     })
 
 

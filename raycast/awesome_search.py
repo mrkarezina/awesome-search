@@ -11,11 +11,12 @@
 # @raycast.icon 📖
 # @raycast.argument1 { "type": "text", "placeholder": "query", "optional": false }
 # @raycast.argument2 { "type": "text", "placeholder": "languages (e.g. python)", "optional": true }
+# @raycast.argument3 { "type": "text", "placeholder": "sort stars?", "optional": true }
 
 # Documentation:
 # @raycast.description Search awesome lists and more!
 # @raycast.author Marko Arezina
-# @raycast.authorURL markoarezina.com
+# @raycast.authorURL https://github.com/mrkarezina
 
 import json
 import re
@@ -25,6 +26,7 @@ from urllib.parse import quote
 from urllib.request import urlopen
 
 API_URL = "http://127.0.0.1:8000"
+# API_URL = "https://awesome-search-dot-graph-intelligence.uc.r.appspot.com"
 
 colors = {
     'green': '\033[92m',
@@ -42,7 +44,7 @@ def parse_list(arg: str) -> str:
     return re.split(r'\W+', arg)
 
 
-def format_url(query: str, languages: List[str], lists: List[str] = []) -> str:
+def format_url(query: str, languages: List[str], lists: List[str] = [], sort_stars: bool = False) -> str:
     query = quote(query)
 
     languages = [f'language={l}' for l in languages if l != '']
@@ -51,13 +53,23 @@ def format_url(query: str, languages: List[str], lists: List[str] = []) -> str:
     lists = [f'awesome-list={l}' for l in lists if l != '']
     lists = "&".join(lists)
 
-    return f"{API_URL}/search?query={query}&{languages}&{lists}"
+    sort_stars = 'true' if sort_stars else 'false'
+
+    return f"{API_URL}/search?query={query}&{languages}&{lists}&sort-stars={sort_stars}"
 
 
 query = sys.argv[1]
 languages = parse_list(sys.argv[2])
+sort_stars = sys.argv[3]
 
-query_url = format_url(query, languages)
+# Default to sort by relevance
+if sort_stars.lower() not in ['', '0', 'false']:
+    sort_stars = True
+else:
+    sort_stars = False
+
+
+query_url = format_url(query, languages, sort_stars=sort_stars)
 
 try:
     with urlopen(query_url) as f:
