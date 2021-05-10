@@ -1,6 +1,7 @@
 import re
 from time import sleep
 from typing import Dict, List
+from json.decoder import JSONDecodeError
 
 import requests
 from config.settings import GH_ACCESS_TOKEN
@@ -84,7 +85,7 @@ class AwesomeScrape:
             try:
                 get_repo_data(url)
                 sleep(DELAY)
-            except (RepoScraperError, KeyError):
+            except (RepoScraperError, KeyError, JSONDecodeError):
                 print(f"Invalid URL: {url}")
 
         return repo_data
