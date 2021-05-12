@@ -1,5 +1,5 @@
 """
-ASGI config for recollectapp project.
+ASGI config for searchapp project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 

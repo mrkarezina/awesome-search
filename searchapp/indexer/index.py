@@ -90,19 +90,30 @@ class Indexer:
 
 if __name__ == "__main__":
     indexer = Indexer([
-        "https://github.com/vinta/awesome-python",
-        "https://github.com/JamzyWang/awesome-redis",
-        "https://github.com/sorrycc/awesome-javascript",
-        "https://github.com/sindresorhus/awesome-nodejs",
-        "https://github.com/markets/awesome-ruby",
-        "https://github.com/veggiemonk/awesome-docker",
-        "https://github.com/mjhea0/awesome-flask",
-        "https://github.com/wsvincent/awesome-django",
-        "https://github.com/ramitsurana/awesome-kubernetes",
-        "https://github.com/enaqx/awesome-react",
-        "https://github.com/dzharii/awesome-typescript",
-        "https://github.com/EthicalML/awesome-production-machine-learning",
-        "https://github.com/gramantin/awesome-rails"
+        # "https://github.com/vinta/awesome-python",
+        # "https://github.com/JamzyWang/awesome-redis",
+        # "https://github.com/sorrycc/awesome-javascript",
+        # "https://github.com/sindresorhus/awesome-nodejs",
+        # "https://github.com/markets/awesome-ruby",
+        # "https://github.com/veggiemonk/awesome-docker",
+        # "https://github.com/mjhea0/awesome-flask",
+        # "https://github.com/wsvincent/awesome-django",
+        # "https://github.com/ramitsurana/awesome-kubernetes",
+        # "https://github.com/enaqx/awesome-react",
+        # "https://github.com/dzharii/awesome-typescript",
+        # "https://github.com/EthicalML/awesome-production-machine-learning",
+        # "https://github.com/gramantin/awesome-rails",
+        # "https://github.com/uralbash/awesome-pyramid",
+        # "https://github.com/krzjoa/awesome-python-data-science",
+        "https://github.com/mjhea0/awesome-fastapi",
+        "https://github.com/shahraizali/awesome-django",
+        "https://github.com/ucg8j/awesome-dash",
+        "https://github.com/springload/awesome-wagtail",
+        "https://github.com/typeddjango/awesome-python-typing",
+        "https://github.com/mcauser/awesome-micropython",
+        "https://github.com/faroit/awesome-python-scientific-audio",
+        "https://github.com/timofurrer/awesome-asyncio",
+        "https://github.com/hbokh/awesome-saltstack"
     ], max_per_list=300)
     indexer.create_index_definition()
     indexer.index()
