@@ -198,13 +198,11 @@ Copy / set the appropriate keys into `config.ini`.
 ### Seed database
 Once Redis is up and running seed the database with some awesome list data.
 
-In `settings.py` configure which awesome lists you would like to scrape and the maximum number of repos to insert per list. To quickly get started with a small dataset reduce `MAX_RES_PER_LIST`. 
+In `assets/list_of_lists.txt` configure which awesome lists you would like to scrape and the maximum number of repos to insert per list. To limit the number of projects scraped decrease `MAX_RES_PER_LIST` in `settings.py`. 
 
 ```
 python -m indexer.index
 ```
-
-TODO: where to put sites to scrape.
 
 ### Django
 
