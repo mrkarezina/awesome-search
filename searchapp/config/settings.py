@@ -75,7 +75,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_nested',
     'users',
-    'apps.search',
+    'search',
     'knox'
 ]
 
@@ -163,6 +163,11 @@ CACHES = {
     }
 }
 
+RQ_QUEUES = {
+    'default': {
+        'USE_REDIS_CACHE': 'redis-cache'
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
