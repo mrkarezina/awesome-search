@@ -1,29 +1,29 @@
 # Awesome Search
 
-Find quality [awesome list](https://github.com/sindresorhus/awesome) resources and more directly in [Raycast](https://raycast.com/).
+Find and index quality [awesome list](https://github.com/sindresorhus/awesome) resources directly from [Raycast](https://raycast.com/) or your CLI!
 
 Powered by blazing fast [RediSearch](https://oss.redislabs.com/redisearch/).
-
-TODO: Architecture: https://redislabs.com/wp-content/uploads/2020/11/redisearch-docs-4.png
-
-TODO: Screenshot showing speed of queries.
 
 ## Why
 Search results are frequently SEO'd to death. Results are full of low quality tutorials and blogs, making it hard to find the golden resources and niche blogs in all the noise.
 
 The goal of Awesome Search is to build a tool to find high quality resources amidst all the noise. Awesome Search is not meant to act like Google which is great for just about anything, rather focus on curated resources and niche blogs that might not rank as high on Google.
 
-Currently the prototype features searching across awesome lists and resources shared by your Twitter network.
+Currently the prototype features searching across projects featured on awesome lists.
+
 
 ## Features
 - Search projects across awesome lists.
+- Submit an awesome list for indexing.
 - Customize search preferences.
-- Add custom sources such as resources shared by your Twitter following or Twitter lists.
 
 
-## Next Steps
-- Integrate with Google Programmable Search Engine.
-	- [Pulling results from engineering blogs which don't rank as high on Google](https://twitter.com/mrkarezina/status/1345884177842003970?s=20).
+## Next steps
+
+Indexing engineering blogs which might not rank as high in search results. For an example check out [this](https://cse.google.com/cse?cx=7170ef95a8051e78a) programmable search engine which only indexes engineering blogs on [this awesome list](https://github.com/kilimchoi/engineering-blogs).
+ 
+There is also a Users module currently in the Django app. This module is for creating an API key that users can save to the cli app. This allows for restricting accounts that can index new lists reducing spam. To simplify the demo authentication is currently turned off.
+
 
 
 ## Stack
@@ -31,13 +31,24 @@ Currently the prototype features searching across awesome lists and resources sh
 - Backend - *Django*, *Redis(RediSearch + RedisJSON)*
 
 
+
 ## Installation
+
+
+### CLI
+
+TODO: Install from pip
+
+Or use Python 3 to run the script, no dependencies required.
+```
+python cli/awesome_search.py
+```
+
+### Raycast
 
 To add the script follow the instructions on the [Raycast script commands page](https://github.com/raycast/script-commands).
 
 If you already have a script directory for your Raycast scripts simply copy the `raycast/awesome_search.py` script to it.
-
-TODO: Personalization token.
 
 
 ## How it works
@@ -45,18 +56,31 @@ Resources across different sources are stored in a variety of keys and data type
 
 Resource data is stored as a JSON sterilized string.
 
-[django-redis](https://github.com/jazzband/django-redis) is used to configure Redis as the backend for Django's cache. This allows for neatly managing the connection for the [redis-py](https://github.com/andymccurdy/redis-py) and [redisearch-py](https://github.com/RediSearch/redisearch-py) client instances using `get_redis_connection()`. 
+[django-redis](https://github.com/jazzband/django-redis) is used to configure Redis as the backend for Django's cache. This allows for neatly managing the connection for the [redis-py](https://github.com/andymccurdy/redis-py) and [redisearch-py](https://github.com/RediSearch/redisearch-py) client instances using `get_redis_connection()`.
 
+Redis Queue is used to submit new awesome lists to index.
+
+
+### Architecture
+
+![Diagram](./assets/diagram.png)
 
 ### Schema
 
-All type of resources are prefixed with `resource:`.
+All types of resources are prefixed with `resource:`. This gives flexibility in extending to new resource types such as blogs.
 
 ### Github Repos
+
+We use a set to track which awesome lists a repository appears on. After indexing the contents of the set are added as a [tag feild](https://oss.redislabs.com/redisearch/Tags/) for filtering search results by awesome list.
+```
+SADD resource:github:{owner}:{repo_name}:lists {list}
+```
+
 ```
 SET resource:github:{owner}:{repo_name} 
 {
 	'repo_name': resource['name'],
+	'lists': # SMEMBERS resource:github:{owner}:{repo_name}:lists
 	'body': resource['description'],
 	'stargazers_count': resource['stargazers_count'],
 	'language': resource['language'],
@@ -64,12 +88,7 @@ SET resource:github:{owner}:{repo_name}
 }
 ```
 
-Track which awesome lists a repository appears on. We can then use this set to add a [tag feild](https://oss.redislabs.com/redisearch/Tags/) specifying the awesome lists a resource appears on.
-```
-SADD resource:github:{owner}:{repo_name}:lists {list}
-```
-
-When inserting a new resource, maintain a list of unique awesome lists and languages to implement faceted search.
+Additionally when inserting a new resource, maintain a list of unique awesome lists and languages to implement faceted search.
 
 ```
 SADD resource:data:languages {language}
@@ -84,21 +103,24 @@ SADD resource:data:awesome_lists {list}
 
 #### Index
 All keys storing resource data are prefixed with `resource:`. This allows for easily defining a Redisearch index with all the different resource types we want to search.
+
 ```python
 definition = IndexDefinition(prefix=['resource:'])
 ```
+
 Optionally if only specific resources such as Github Repos were to be indexed more specific prefixes could be specified: `prefix=['resource:github']`.
 
-Before making any queries the index need to be built.
+Before making any queries the index needs to be built.
 ```python
 self.client.create_index([TextField('body', weight=1),
-                                      TextField('repo_name', weight=1),
-                                      TextField('language', weight=1)], definition=definition)
+                                      TextField('repo_name', weight=1.5),
+                                      TextField('language', weight=1),
+                                      TagField('lists')], definition=definition)
 
 ```
 This specifies which feilds should be indexed.  Additionaly the weight argument allows for increasing the effect of matches in certain feilds such as "repo_name".
 
-Once the index is created it automatically stays in sync as new hashes are inserted. To add new documents to the index simply create a hash for that document.
+Once the index is created documents are index in real time as they are added to Redis. To add new documents to the index simply create a hash for that document.
 
 
 #### General Search
@@ -120,32 +142,33 @@ FT.SEARCH {index} {query}
 GET /search?query=&source=&language=&awesome-list=
 ```
 
-Redisearch supports [feild modifiers](https://oss.redislabs.com/redisearch/Query_Syntax/#field_modifiers) in the query. Modifiers can be combined to implement filtering on multiple filed. We use field modifiers to implement faceted search on specific sources, languges, awesome lists.
+Redisearch supports [field modifiers](https://oss.redislabs.com/redisearch/Query_Syntax/#field_modifiers) in the query. Modifiers can be combined to implement filtering on multiple fields. We use field modifiers to implement faceted search on specific sources, languages, awesome lists.
 
 ```
 FT.SEARCH {index} @resouce:(tweets|github) @language:(Python|C) @awesome_list:(awesome-python) {query}
 ```
 
 
-Alternatively instead of specifying the source (ie: tweet or github) as a feild modifier seperate indexes could be built for each source, by providing a more specific key prefix. Ie: 
+Alternatively instead of specifying the source (ie: tweet or github) as a field modifier separate indexes could be built for each source, by providing a more specific key prefix. Ie:
 ```
 definition_git = IndexDefinition(prefix=['resource:github'])
 definition_tweet = IndexDefinition(prefix=['resource:tweet'])
 ```
 
-The seperate indexes would result in faster queries but introduce additional complexity for ranking / pagination if the user chooses to search across both sources.
-
+The separate indexes would result in faster queries but introduce additional complexity for ranking / pagination if the user chooses to search across both sources.
 
 ## Development
 
 ### Python
+
+First `cd searchapp`.
 
 Create a new python virtual environment.
 ```
 python -m venv venv
 ```
 
-Activate virtual environment.
+Activate the virtual environment.
 ```
 source venv/bin/activate
 ```
@@ -163,6 +186,15 @@ Start a Docker container running the Redis instance with the Redisearch module.
 docker run -d -p 6379:6379 redislabs/redisearch:2.0.0
 ```
 
+### Config
+
+The default `config.ini.sample` values are for local development.
+
+Request a personal access token for the Github API [here](https://github.com/settings/tokens).
+
+Copy / set the appropriate keys into `config.ini`.
+
+
 ### Seed database
 Once Redis is up and running seed the database with some awesome list data.
 
@@ -171,6 +203,8 @@ In `settings.py` configure which awesome lists you would like to scrape and the 
 ```
 python -m indexer.index
 ```
+
+TODO: where to put sites to scrape.
 
 ### Django
 
@@ -184,49 +218,29 @@ Start the django server.
 python manage.py runserver
 ```
 
-### Raycast
+### Run CLI app
 
-Raycast automatically reflects any changes in the script. Simply run the script again to debug any changes.
+```
+python cli/awesome_search.py
+```
 
-
-
-
-### Config
-
-Follow the steps below to copy the appropriate keys into `config.ini`.
-
-### Twitter
-
-You will need to create a twitter developer account and submit an application to request access to the twitter API. Acceptance should be automated if you provide enough detail.
-
-The API key and secret on the developer dashboard is the consumer key and secret.
-
-The access token and secret is account specific.
-
-
-### Github
-
-
-No application is required for the Github API. Request a personal access token [here](https://github.com/settings/tokens).
+Raycast will automatically reflects any changes in the script. Simply run the script again to debug any changes.
 
 
 ## Deployment
-Deploymnent:
-https://www.bogotobogo.com/DevOps/Docker/Docker_Kubernetes_Minikube_3_Django_with_Redis_Celery.php
 
+For detailed steps for deploying Django on App Engine see the official [documentation](https://cloud.google.com/python/django/appengine).
 
-TODO: see cloud run deployment
+In the `searchapp/` root.
 
-https://cloud.google.com/python/django/appengine
-+ Redis enterprise cloud
+Set your project ID:
+```
+gcloud config set project my-project-id
+```
 
-Add double config if it's app engine environment or just local
+[Create a MySQL database](https://cloud.google.com/python/django/appengine#creating_a_cloud_sql_instance). Then set the connection string / password in the deployment `config.ini`.
 
-
-# TODO
-- [ ] Add contributing instructions
-- [ ] Use stargazer count to scale relevance
-- [ ] Update schema to support cards from multiple users.
-- [ ] Configuration script to configure Redis Indexes
-- [ ] Setup fresh environment from README to improve instruction replicability.
-	- Focus on Redis configuration. 
+To deploy run
+```
+gcloud app deploy
+```

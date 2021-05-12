@@ -1,0 +1,14 @@
+[redis]
+PORT=6379
+HOST=127.0.0.1
+PASSWORD=
+
+[github]
+ACCESS_TOKEN=
+
+[prod]
+SECRET_KEY=
+MYSQL_NAME=awesome-search-base
+MYSQL_USER=root
+MYSQL_CONNECTION_NAME=
+MYSQL_PASS=
