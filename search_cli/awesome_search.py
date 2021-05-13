@@ -1,23 +1,12 @@
-"""
-- Facted search for lists, show be fuzzy match so can say django to search all
-awesome lists for django.
--> Show list of all languages / awesome lists
-- Pagnate though resutls ... how to do with cli?
-- Improve query time.
-- Tune Redis to match more stuff
-- Use Redisearch to match similar languages if type
-"""
-
+import argparse
 import json
 import re
 import sys
 from typing import List
 from urllib.parse import quote
 from urllib.request import urlopen
-import argparse
 
-API_URL = "http://127.0.0.1:8000"
-# API_URL = "https://awesome-search-dot-graph-intelligence.uc.r.appspot.com"
+API_URL = "https://awesome-search-dot-graph-intelligence.uc.r.appspot.com"
 
 colors = {
     'green': '\033[92m',

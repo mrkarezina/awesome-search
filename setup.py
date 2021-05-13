@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='awesome-search',
-    version='0.1',
+    version='0.1.2',
     packages=['search_cli'],
     entry_points='''
         [console_scripts]
