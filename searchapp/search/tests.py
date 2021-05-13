@@ -11,7 +11,7 @@ class GeneralSearchTests(APITestCase):
     def test_query_formatter(self):
         query = format_query('redis search', resources=['tweets', 'github'],
                              languages=['Python', 'Ruby'], awesome_lists=['awesome-python', 'awesome-ruby'])
-        target = "@source:(tweets|github) @language:(Python|Ruby) @awesome_list:(awesome-python awesome-ruby) redis search"
+        target = "@source:(tweets|github) @language:(Python|Ruby) @lists:(awesome-python awesome-ruby) redis search"
         self.assertEquals(query, target)
 
     def test_query_parser(self):

@@ -91,5 +91,5 @@ class Indexer:
 if __name__ == "__main__":
     with open("../assets/list_of_lists.txt") as lists:
         indexer = Indexer(lists.read().splitlines(), max_per_list=MAX_RES_PER_LIST)
-        indexer.create_index_definition(drop_existing=True)
+        indexer.create_index_definition()
         indexer.index()
