@@ -26,7 +26,7 @@ def format_query(query, resources, languages, awesome_lists) -> str:
         components.append(f"@language:({languages})")
     if len(awesome_lists) > 0:
         awesome_lists = " ".join(awesome_lists)
-        components.append(f"@awesome_list:({awesome_lists})")
+        components.append(f"@lists:({awesome_lists})")
 
     components = " ".join(components)
     query = f"{components} {text_query}"

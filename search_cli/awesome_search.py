@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 """
 - Facted search for lists, show be fuzzy match so can say django to search all
 awesome lists for django.
@@ -33,6 +31,8 @@ parser.add_argument(
     'query', help="Query to search. Use quotes for queries with spaces.")
 parser.add_argument('-l', '--languages', default='',
                     required=False, help='Comma delimited list of programming languages to filter by.')
+parser.add_argument('--lists', default='',
+                    required=False, help='Comma delimited list of terms filtering which awesome lists to search. E.g: django matches awesome-django.')
 parser.add_argument('-s', '--stars', action='store_const',
                     const=True, default=False, help='Toggle to sort result by stars.')
 parser.add_argument('-r', '--results', default=5, type=int,
@@ -77,6 +77,8 @@ def fetch_results(query_url: str, results: int):
 
 def main():
     args = parser.parse_args()
+
     query_url = format_url(args.query,
-                           parse_list(args.languages), sort_stars=args.stars)
+                           parse_list(args.languages),
+                           parse_list(args.lists), sort_stars=args.stars)
     fetch_results(query_url, args.results)

@@ -38,7 +38,7 @@ class Indexer:
             self.client.create_index([TextField('body', weight=1),
                                       TextField('repo_name', weight=1.5),
                                       TextField('language', weight=1),
-                                      TagField('lists')], definition=definition)
+                                      TextField('lists')], definition=definition)
         except ResponseError:
             print("Index already exists.")
 
@@ -91,5 +91,5 @@ class Indexer:
 if __name__ == "__main__":
     with open("../assets/list_of_lists.txt") as lists:
         indexer = Indexer(lists.read().splitlines(), max_per_list=MAX_RES_PER_LIST)
-        indexer.create_index_definition()
+        indexer.create_index_definition(drop_existing=True)
         indexer.index()

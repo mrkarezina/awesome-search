@@ -22,13 +22,13 @@ Currently the prototype features searching across projects featured on awesome l
 
 Indexing engineering blogs which might not rank as high in search results. For an example check out [this](https://cse.google.com/cse?cx=7170ef95a8051e78a) programmable search engine which only indexes engineering blogs on [this awesome list](https://github.com/kilimchoi/engineering-blogs).
  
-There is also a Users module currently in the Django app. This module is for creating an API key that users can save to the cli app. This allows for restricting accounts that can index new lists reducing spam. To simplify the demo authentication is currently turned off.
+There is also a Users module currently in the Django app. This module is for creating an API key that users can save to the cli app. This allows for restricting accounts that can index new lists reducing spam. To simplify the demo authentication and submitting new lists is not included.
 
 
 
 ## Stack
 - Frontend - *React*
-- Backend - *Django*, *Redis(RediSearch + RedisJSON)*
+- Backend - *Django*, *Redis (RediSearch)*
 
 
 
@@ -38,7 +38,7 @@ There is also a Users module currently in the Django app. This module is for cre
 ### CLI
 
 ```
-pip install awesome-search==0.1
+pip install awesome-search
 ```
 
 Usage
@@ -46,11 +46,21 @@ Usage
 awesome "[query]"
 ```
 
+Example search django redis projects, sort top results by stars.
+```
+awesome "django redis" -l python -s
+```
+
 #### Options
 
 Comma delimited list of languages.
 ```
 --languages python,javascript
+```
+
+Comma delimited list of terms to filter awesome lists results appear on. E.g "redis,django" for awesome-redis, awesome-django.
+```
+--lists [terms]
 ```
 
 Sort results by stars.
@@ -61,11 +71,6 @@ Sort results by stars.
 Hits to return.
 ```
 --results 5
-```
-
-Example
-```
-awesome "django redis" -l python -s
 ```
 
 
@@ -83,7 +88,7 @@ Resource data is stored as a JSON sterilized string.
 
 [django-redis](https://github.com/jazzband/django-redis) is used to configure Redis as the backend for Django's cache. This allows for neatly managing the connection for the [redis-py](https://github.com/andymccurdy/redis-py) and [redisearch-py](https://github.com/RediSearch/redisearch-py) client instances using `get_redis_connection()`.
 
-Redis Queue is used to submit new awesome lists to index.
+Redis Queue is used to submit new indexing jobs.
 
 
 ### Architecture
@@ -96,7 +101,7 @@ All types of resources are prefixed with `resource:`. This gives flexibility in 
 
 ### Github Repos
 
-We use a set to track which awesome lists a repository appears on. After indexing the contents of the set are added as a [tag feild](https://oss.redislabs.com/redisearch/Tags/) for filtering search results by awesome list.
+We use a set to track which awesome lists a repository appears on. After indexing the contents of the set are added as a document property for [filtering search results]((https://oss.redislabs.com/redisearch/Query_Syntax/#field_modifiers)) by awesome list.
 ```
 SADD resource:github:{owner}:{repo_name}:lists {list}
 ```
