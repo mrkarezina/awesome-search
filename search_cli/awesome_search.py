@@ -29,11 +29,12 @@ colors = {
 }
 
 parser = argparse.ArgumentParser(description='Search preferences.')
-parser.add_argument('query')
+parser.add_argument(
+    'query', help="Query to search. Use quotes for queries with spaces.")
 parser.add_argument('-l', '--languages', default='',
                     required=False, help='Comma delimited list of programming languages to filter by.')
-parser.add_argument('-s', '--stars', default=False, type=bool,
-                    required=False, help='Sort result by stars.')
+parser.add_argument('-s', '--stars', action='store_const',
+                    const=True, default=False, help='Toggle to sort result by stars.')
 parser.add_argument('-r', '--results', default=5, type=int,
                     required=False, help='Results to display.')
 
@@ -79,4 +80,3 @@ def main():
     query_url = format_url(args.query,
                            parse_list(args.languages), sort_stars=args.stars)
     fetch_results(query_url, args.results)
-

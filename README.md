@@ -37,12 +37,37 @@ There is also a Users module currently in the Django app. This module is for cre
 
 ### CLI
 
-TODO: Install from pip
+```
+pip install awesome-search==0.1
+```
 
-Or use Python 3 to run the script, no dependencies required.
+Usage
 ```
-python cli/awesome_search.py
+awesome "[query]"
 ```
+
+#### Options
+
+Comma delimited list of languages.
+```
+--languages python,javascript
+```
+
+Sort results by stars.
+```
+--stars
+```
+
+Hits to return.
+```
+--results 5
+```
+
+Example
+```
+awesome "django redis" -l python -s
+```
+
 
 ### Raycast
 
@@ -216,16 +241,20 @@ Start the django server.
 python manage.py runserver
 ```
 
-### Run CLI app
+### CLI
 
+Install the CLI for testing locally.
 ```
-python cli/awesome_search.py
+python setup.py install
 ```
 
-Raycast will automatically reflects any changes in the script. Simply run the script again to debug any changes.
+
+If using Raycast any changes in the script will automatically be reflected. Simply run the script again to debug any changes.
 
 
 ## Deployment
+
+### Backend
 
 For detailed steps for deploying Django on App Engine see the official [documentation](https://cloud.google.com/python/django/appengine).
 
@@ -241,4 +270,16 @@ gcloud config set project my-project-id
 To deploy run
 ```
 gcloud app deploy
+```
+
+### CLI
+
+Create dist bundle.
+```
+python setup.py sdist
+```
+
+Push to PyPi
+```
+twine upload --skip-existing dist/*
 ```
