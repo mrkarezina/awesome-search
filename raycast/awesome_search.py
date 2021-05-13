@@ -25,8 +25,8 @@ from typing import List
 from urllib.parse import quote
 from urllib.request import urlopen
 
-API_URL = "http://127.0.0.1:8000"
-# API_URL = "https://awesome-search-dot-graph-intelligence.uc.r.appspot.com"
+# API_URL = "http://127.0.0.1:8000"
+API_URL = "https://awesome-search-dot-graph-intelligence.uc.r.appspot.com"
 
 colors = {
     'green': '\033[92m',
