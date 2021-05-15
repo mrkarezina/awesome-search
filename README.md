@@ -4,6 +4,10 @@ Find and index quality [awesome list](https://github.com/sindresorhus/awesome) r
 
 Powered by blazing fast [RediSearch](https://oss.redislabs.com/redisearch/).
 
+
+![Demo](./assets/demo.png)
+
+
 ## Why
 Search results are frequently SEO'd to death. Results are full of low quality tutorials and blogs, making it hard to find the golden resources and niche blogs in all the noise.
 
@@ -36,6 +40,8 @@ There is also a Users module currently in the Django app. This module is for cre
 
 
 ### CLI
+
+Create and activate a python virtual environment. Then:
 
 ```
 pip install awesome-search
@@ -286,5 +292,5 @@ python setup.py sdist
 
 Push to PyPi
 ```
-twine upload --skip-existing dist/*
+twine upload dist/*
 ```
