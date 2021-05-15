@@ -18,20 +18,19 @@ Currently the prototype features searching across projects featured on awesome l
 
 ## Features
 - Search projects across awesome lists.
-- Submit an awesome list for indexing.
 - Customize search preferences.
+- Submit an awesome list for indexing.
 
 
 ## Next steps
 
 Indexing engineering blogs which might not rank as high in search results. For an example check out [this](https://cse.google.com/cse?cx=7170ef95a8051e78a) programmable search engine which only indexes engineering blogs on [this awesome list](https://github.com/kilimchoi/engineering-blogs).
  
-There is also a Users module currently in the Django app. This module is for creating an API key that users can save to the cli app. This allows for restricting accounts that can index new lists reducing spam. To simplify the demo authentication and submitting new lists is not included.
-
+There is also a Users module currently in the Django app. This module is for creating an API key that users can save to the cli app. This allows for restricting accounts that can index new lists thus reducing spam.
 
 
 ## Stack
-- Frontend - *React*
+- CLI - *Python*, *Raycast*
 - Backend - *Django*, *Redis (RediSearch)*
 
 
@@ -41,7 +40,15 @@ There is also a Users module currently in the Django app. This module is for cre
 
 ### CLI
 
-Create and activate a python virtual environment. Then:
+Create and activate a python virtual environment.
+```
+python -m venv venv
+```
+```
+source venv/bin/activate
+```
+
+Then:
 
 ```
 pip install awesome-search
@@ -154,9 +161,9 @@ self.client.create_index([TextField('body', weight=1),
                                       TagField('lists')], definition=definition)
 
 ```
-This specifies which feilds should be indexed.  Additionaly the weight argument allows for increasing the effect of matches in certain feilds such as "repo_name".
-
-Once the index is created documents are index in real time as they are added to Redis. To add new documents to the index simply create a hash for that document.
+This specifies which fields should be indexed.  Additionally the weight argument allows for increasing the effect of matches in certain fields such as "repo_name".
+ 
+Once the index is created documents are indexed in real time as they are added to Redis. To add new documents to the index simply create a hash for that document.
 
 
 #### General Search
@@ -264,6 +271,12 @@ If using Raycast any changes in the script will automatically be reflected. Simp
 
 
 ## Deployment
+
+### Redis
+
+Create a Redis instance on [Redis Cloud](https://redislabs.com/redis-enterprise-cloud/overview/). Set the port, host, and password of your instance in the redis section of the `searchapp/config.ini`.
+
+
 
 ### Backend
 
