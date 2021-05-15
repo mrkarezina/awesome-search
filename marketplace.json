@@ -1,0 +1,43 @@
+{
+    "app_name": "Awesome Search",
+    "description": "Search awesome list resources directly from your CLI!",
+    "hidden": "true",
+    "rank": "21",
+    "type": "Full App",
+    "contributed_by": "Community",
+    "repo_url": "https://github.com/mrkarezina/awesome-search",
+    "download_url": "https://github.com/mrkarezina/awesome-search/archive/refs/heads/master.zip",
+    "hosted_url": "https://pypi.org/project/awesome-search/0.1.2/",
+    "quick_deploy": "false",
+    "deploy_buttons": [],
+    "language": [
+        "Python"
+    ],
+    "redis_commands": [
+        "SET",
+        "SADD",
+        "SMEMBERS",
+        "FT.CREATE",
+        "FT.SEARCH",
+        "FT.DROPINDEX"
+    ],
+    "redis_features": [
+        "caching"
+    ],
+    "redis_modules": [
+        "RediSearch"
+    ],
+    "app_image_urls": [
+        "https://raw.githubusercontent.com/mrkarezina/awesome-search/master/assets/demo.png",
+        "https://raw.githubusercontent.com/mrkarezina/awesome-search/master/assets/diagram.png"
+    ],
+    "youtube_url": "https://www.youtube.com/watch?v=b_NFg7hZILE",
+    "special_tags": [
+        "Hackathon"
+    ],
+    "verticals": [
+        "Technology",
+        "Education"
+    ],
+    "markdown": "https://github.com/mrkarezina/awesome-search/blob/master/README.md"
+}

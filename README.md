@@ -5,7 +5,7 @@ Find and index quality [awesome list](https://github.com/sindresorhus/awesome) r
 Powered by blazing fast [RediSearch](https://oss.redislabs.com/redisearch/).
 
 
-![Demo](./assets/demo.png)
+![Demo](https://raw.githubusercontent.com/mrkarezina/awesome-search/master/assets/demo.png)
 
 
 ## Why
@@ -99,7 +99,7 @@ Redis Queue is used to submit new indexing jobs.
 
 ### Architecture
 
-![Diagram](./assets/diagram.png)
+![Diagram](https://raw.githubusercontent.com/mrkarezina/awesome-search/master/assets/diagram.png)
 
 ### Schema
 
