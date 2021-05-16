@@ -261,11 +261,17 @@ python manage.py runserver
 
 ### CLI
 
+Run the following commands in the awesome-search project root.
+
 Install the CLI for testing locally.
 ```
 python setup.py install
 ```
 
+Run tests.
+```
+python -m unittest
+```
 
 If using Raycast any changes in the script will automatically be reflected. Simply run the script again to debug any changes.
 
