@@ -28,10 +28,10 @@ parser.add_argument('-r', '--results', default=5, type=int,
                     required=False, help='Results to display.')
 
 
-def parse_list(arg: str) -> str:
+def parse_list(arg: str) -> List[str]:
     """
     Parse script args containing a list of values.
-    Splits tokens by any non-alphanumeric character. 
+    Splits tokens by any non-alphanumeric character.
     """
     return re.split(r'\W+', arg)
 
@@ -50,24 +50,41 @@ def format_url(query: str, languages: List[str], lists: List[str] = [], sort_sta
     return f"{API_URL}/search?query={query}&{languages}&{lists}&sort-stars={sort_stars}"
 
 
-def fetch_results(query_url: str, results: int):
+def fetch_results(query_url: str) -> List[dict]:
     try:
         with urlopen(query_url) as f:
             result = json.load(f)
     except:
-        print('Failed loading resources ...')
+        print('Failed loading results ...')
         sys.exit(0)
+    return result['docs']
 
-    for doc in result['docs'][:results]:
+
+def format_results(docs: List[dict], results: int) -> str:
+    s = ""
+    for doc in docs[:results]:
         name, desc, stars, url = doc['repo_name'], doc['body'], doc['stargazers_count'], doc['svn_url']
-        print(f"{colors['green']}{name}{colors['end']} - {desc}")
-        print(f"Stars {colors['yellow']}{stars}{colors['end']} {url}\n")
+        s += f"{colors['green']}{name}{colors['end']} - {desc}\n"
+        s += f"Stars {colors['yellow']}{stars}{colors['end']} {url}\n\n"
+    return s
+
+
+def format_error(args: argparse.Namespace) -> str:
+    s = f"No results found for: \"{args.query}\""
+    if args.languages != "":
+        s += f" | Written in: \"{args.languages}\""
+    if args.lists != "":
+        s += f" | Featured on: \"{args.lists}\" lists"
+    return s
 
 
 def main():
     args = parser.parse_args()
-
     query_url = format_url(args.query,
                            parse_list(args.languages),
                            parse_list(args.lists), sort_stars=args.stars)
-    fetch_results(query_url, args.results)
+    docs = fetch_results(query_url)
+    if len(docs) == 0:
+        print(format_error(args))
+    else:
+        print(format_results(docs, args.results))
